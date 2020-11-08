@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
+
 const app = express();
 app.use(express.json());
 const secret = 'DWFS'
@@ -8,6 +9,14 @@ const secret = 'DWFS'
 function validateUser(req, res, next) {
     try {
         req.token_info.is_admin ? next() : res.status(401).json("Unauthorized - Not an admin");
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+function validateAdmin(req, res) {
+    try {
+        return req.token_info.is_admin == 0 ? req.token_info.user_id : 'is_admin';
     } catch (error) {
         console.log(error);
     }
@@ -45,5 +54,6 @@ module.exports = {
     validateToken,
     createToken,
     validateUser,
-    is_numeric
+    is_numeric,
+    validateAdmin
 }

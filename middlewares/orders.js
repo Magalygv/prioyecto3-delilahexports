@@ -1,6 +1,6 @@
 const { response } = require('express');
 const sequelize = require('../database/conexion');
-const { validateToken, is_numeric } = require('./security');
+const { validateToken, is_numeric, validateAdmin } = require('./security');
 
 // adiciono orden
 const addOrder = async(req, res, next) => {
@@ -71,6 +71,37 @@ const addOrder = async(req, res, next) => {
             });
     };
 }
+
+const getOrder = async(req, res, next) => {
+
+    let is_admin = validateAdmin(req, res);
+    if (is_admin == 'is_admin') {
+        //busca lista de ordenes
+        await sequelize.query('SELECT * FROM orders', {
+                type: sequelize.QueryTypes.SELECT,
+            })
+            .then(result => {
+                res.status(200).json(result);
+            }).catch(err => {
+                console.error(err)
+                res.status(400).json('Error buscando informacion');
+            });
+        return
+    } else {
+        //busca por id
+        await sequelize.query(`SELECT * FROM orders WHERE user_id=${is_admin}`, {
+                type: sequelize.QueryTypes.SELECT,
+            })
+            .then(result => {
+                res.status(200).json(result);
+            }).catch(err => {
+                console.error(err)
+                res.status(400).json('Error buscando informacion');
+            });
+    };
+    next();
+};
+
 
 //actualizo orden 
 const updateOrder = async(req, res, next) => {
@@ -143,4 +174,5 @@ module.exports = {
     addOrder,
     updateOrder,
     deleteOrder,
+    getOrder,
 }

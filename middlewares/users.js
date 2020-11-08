@@ -1,5 +1,6 @@
 const { createToken } = require('./security');
 const sequelize = require('../database/conexion');
+const { is_numeric } = require('./security');
 
 //valido el usuario para ingresar 
 const validateCreateUser = async(req, res, next) => {
@@ -77,9 +78,105 @@ const loginUser = async(req, res, next) => {
         console.log('todos los datos');
         next();
     }
-}
+};
+
+const getUser = async(req, res, next) => {
+    let id = req.query.id ? is_numeric(req.query.id) : 'allproducts';
+    if (id == 'allproducts') {
+        //busca lista de productos
+        await sequelize.query('SELECT * FROM users', {
+                type: sequelize.QueryTypes.SELECT,
+            })
+            .then(result => {
+                res.status(200).json(result);
+            }).catch(err => {
+                console.error(err)
+                res.status(400).json('Error buscando informacion');
+            });
+        return
+    };
+    if (id != false) {
+        //busca por id
+        await sequelize.query(`SELECT * FROM users WHERE user_id=${id}`, {
+                type: sequelize.QueryTypes.SELECT,
+            })
+            .then(result => {
+                res.status(200).json(result);
+            }).catch(err => {
+                console.error(err)
+                res.status(400).json('Error buscando informacion');
+            });
+        console.log('Busqueda por una id');
+        next();
+    } else {
+        return res.status(400).json('El query de la ruta solo admite números');
+    };
+    next();
+};
+
+
+const updateUser = async(req, res, next) => {
+    let id = req.query.id ? is_numeric(req.query.id) : console.log('Falta parametro id');
+    let { username, password, fullname, email, phone, address } = req.body;
+    if (!username || !password || !fullname || !email || !phone || !address) {
+        res.status(400).json('Información incompleta o petición mal formulada');
+    } else {
+        if (id != false) {
+            await sequelize.query(`UPDATE users SET username='${username}', password='${password}', full_name='${fullname}', email='${email}', phone=${phone}, delivery_address='${address}'
+        WHERE user_id=${id}`)
+                .then(result => {
+                    console.log("Number of records update: " + result[1]);
+                }).catch(err => {
+                    console.error(err)
+                });
+            res.status(200).json('Actualización satisfatoria');
+        }
+        next();
+    }
+};
+
+// elimino usuario
+const deleteUser = async(req, res, next) => {
+    let id = req.query.id ? is_numeric(req.query.id) : console.log('Falta parametro id');
+    console.log(id);
+    if (!id) {
+        res.status(406).json('Falta identificación');
+        next();
+    } else {
+        if (id != false) {
+            await sequelize.query(`SELECT * FROM users WHERE user_id=${id}`, {
+                    type: sequelize.QueryTypes.SELECT,
+                }) //valida si hay productos asociados a una orden
+                .then(result => {
+                    if (result[0] !== null || result[0] !== [] || result[0] !== "") { //Sino tiene relación con la tabla order_product -> busca en products
+
+                        sequelize.query(`DELETE FROM users WHERE user_id =${id}`) //borra el producto sino esta asociado a una orden
+                            .then(result => {
+                                if (result[1] != 0) {
+                                    res.status(200).json(`Usuario eliminado por id ${id}`);
+                                } else {
+                                    res.status(406).json(`No se puede eliminar`);
+                                }
+                                console.log("Number of rows delete: " + result[1]);
+                            }).catch(err => {
+                                console.error(err)
+                            });
+                    } else {
+                        res.status(400).json('No se puede eliminar usuario')
+                    }
+                    console.log("Number of rows delete: " + result[1]);
+                }).catch(err => {
+                    console.error(err)
+                });
+        }
+        next();
+    }
+};
 
 module.exports = {
     validateCreateUser,
-    loginUser
+    loginUser,
+    getUser,
+    updateUser,
+    deleteUser,
 }

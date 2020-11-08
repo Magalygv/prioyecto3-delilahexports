@@ -7,7 +7,7 @@ info:
   version: 1.0.0
 externalDocs:
   description: Github Repository
-  url: https://github.com/nombre/delilah-resto
+  url: https://github.com/Magalygv/prioyecto3
 servers:
   - url: https://localhost:3000/
   - url: http://localhost:3000/
@@ -35,7 +35,8 @@ paths:
             schema:
               $ref: '#/components/schemas/createUser'
         required: true
-      security: []
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: Usuario creado correctamente
@@ -43,7 +44,8 @@ paths:
           description: Información incompleta o petición mal formulada
         default:
           $ref: "#/components/responses/Default"
-          
+        
+  #USUARIOS       
   /login:
     post:
       tags:
@@ -61,12 +63,95 @@ paths:
       security: []
       responses:
         200:
-          description: Usuario creado correctamente
+          description: Token
         400:
           description: Información incompleta o petición mal formulada
         default:
           $ref: "#/components/responses/Default"
-
+          
+  /getUser:
+    get:
+      tags:
+        - User
+      summary: obtener usuarios
+      description: Busqueda por una id
+      operationId: getUser
+      security: []
+      parameters:
+        - name: search
+          in: query
+          description: busca todos los usuarios
+          schema:
+            type: string
+      responses:
+        200:
+          description: Operacion exitosa
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/getUser'
+        400:
+          description: Error al buscar la información
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/Default"
+       
+  /updateUser/:id:
+    put:
+      tags:
+        - User
+      summary: Actualiza un usuario (solo Admin)
+      description: Actualiza toda la información del usuario con el id del mismo
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: query
+          example: id=1
+          description: Necesitamos la identificacion del usuario
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: updateUser
+        content:
+          application/json:
+            schema:
+             $ref: '#/components/schemas/updateUser'
+        required: true
+      responses:
+        200:
+          description: "El usuario identificado con el id: ${id} fue actualizado correctamente"
+        400:
+          description: La información ingresada está incompleta o mal redactada
+        default:
+          $ref: "#/components/responses/Default"
+   #USUARIOS       
+  /deleteUser/:id:
+    delete:
+      tags:
+        - User
+      summary: Eliminar usuario (solo Admin)
+      description: Elimina un usuario por la identificacion.
+      parameters:
+        - name: id
+          in: query
+          example: id=1
+          description: Necesitamos la identificacion del usuario.
+          required: true
+          schema:
+            type: string
+      operationId: deleteUser
+      responses:
+        200:
+          description: "Se elimino el usuario ${id} correctamente"
+        400:
+          description: No se envio identificacion o estatus
+        401:
+          $ref: "#/components/responses/UnauthorizedAdmin"
+        default:
+          $ref: "#/components/responses/Default"
+  
 #ORDENES
   /addOrder/:id:
     post:
@@ -89,7 +174,29 @@ paths:
           description: Información incompleta o petición mal formulada
         default:
           $ref: "#/components/responses/Default"
-
+          
+          
+#ORDENES
+  /getOrder/:id:
+    get:
+      tags:
+        - Orders
+      summary: Obtiene una orden
+      description: Obtiene ordenes de acuerdo a los id
+      operationId: getOrder
+      responses:
+        200:
+         description: Order to create
+         content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Order"
+        400:
+          description: Error buscando informacion
+        default:
+          $ref: "#/components/responses/Default"
+          
+#ORDENES
   /updateOrder/:id:
     put:
       tags:
@@ -129,7 +236,7 @@ paths:
           description: No se encontraron resultados
         default:
           $ref: "#/components/responses/Default"
-          
+#ORDENES        
   /deleteOrder/:id:
     delete:
       tags:
@@ -183,6 +290,7 @@ paths:
         default:
           $ref: "#/components/responses/Default"
 
+#PRODUCTOS
   /getProducts/:id:
     get:
       tags:
@@ -212,6 +320,8 @@ paths:
         default:
           $ref: "#/components/responses/Default"
     
+    
+    #PRODUCTOS
   /addProducts/:id:      
     post:
       tags:
@@ -236,6 +346,7 @@ paths:
         default:
           $ref: "#/components/responses/Default"
 
+#PRODUCTOS
   /updateProducts/:id:  
     put:
       tags:
@@ -267,7 +378,7 @@ paths:
           $ref: "#/components/responses/UnauthorizedAdmin"
         default:
           $ref: "#/components/responses/Default"
-
+#PRODUCTOS
   /deleteProducts/:id:  
     delete:
       tags:
@@ -305,17 +416,17 @@ components:
         id:
           type: integer
           format: int64
-          example: 1
+          example: 3
         username:
           type: string
-          example: tom
+          example: tomas
         password:
           type: string
-          example: tom123
+          example: tomas123
         email:
           type: string
-          example: tom@gmail.com
-        delivery_address:
+          example: tomas@gmail.com
+        address:
           type: string
           example: Los Angeles 
         full_name:
@@ -323,16 +434,73 @@ components:
           example: Tom Warner
         phone:
           type: integer
-          example: 6665544
+          example: 6665588
     login:
       type: object
       properties:
         username:
           type: string
-          example: tom
+          example: tomas
         password:
           type: string
-          example: tom123
+          example: tomas123
+          
+    getUser:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 7
+        username:
+          type: string
+          example: samara
+        password:
+          type: string
+          example: samara123
+        full_name: 
+          type: string
+          example: samara castro
+        email: 
+          type: string
+          example: samycastro@gmail.com
+        phone:
+          type: integer
+          example: 411121
+        delivery_address: 
+          type: string
+          example: calle 98 64 -52
+        is_admin: 
+          type: integer
+          example: 0
+        is_disabled: 
+          type: integer
+          example: 0
+          
+    updateUser:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: camila
+        password:
+          type: string
+          example: camila123
+        full_name: 
+          type: string
+          example: Camila Mazo
+        email: 
+          type: string
+          example: camilamazo12345@gmail.com
+        phone:
+          type: integer
+          example: 56879455
+        delivery_address: 
+          type: string
+          example: Villa lia 65-09  
+
 #Schema-Products
     Product:
       type: object
@@ -370,10 +538,10 @@ components:
           example: 20000
         img_url:
           type: string
-          example: https://lahamburguesa.com/hm.jpg
+          example: https://lalazaña.com/hm.jpg
         description:
           type: string
-          example: hamburguesa con doble carne
+          example: lazaña con carne
         is_disabled:
           type: boolean
           example: 0
@@ -421,7 +589,7 @@ components:
           example: "2020-10-29T10:11:12Z"
         description:
           type: string
-          example: "2x hamburguesa"
+          example: "2x lazaña"
         payment_method:
           type: string
           example: "cash"
@@ -464,7 +632,7 @@ components:
       properties:
         token:
           type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo0LCJmdWxsbmFtZSI6Ik1hZ2FseSBHb256YWxleiIsImVtYWlsIjoibWFnYWx5Z3YyMDIwQGdtYWlsLmNvbSIsImlzX2FkbWluIjoxLCJpYXQiOjE2MDQ4NzA5NDN9.OY8gN5Dkm3Vu4L4Ftt3gpCjJ8FzLk76CQJGnPGnHD9w
     Error:
       type: object
       properties:

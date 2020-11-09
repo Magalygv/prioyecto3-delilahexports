@@ -50,6 +50,16 @@ sequelize
 •	Abrir el archivo en bd.sql y dentro del panel de control de la base de datos ejecutar la serie de queries del archivo o importar el mismo.
 
 
+crear archivo .env
+
+
+DB_HOST=localhost
+DB_NAME=db_delilahexports
+DB_USER=root
+DB_PASS=
+DB_PORT=3306
+
+
 4 - Iniciando el servidor
 Abrir el archivo desde la consola en nodemon server.js
 
